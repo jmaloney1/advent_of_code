@@ -3,8 +3,8 @@ import sys
 
 
 def main():
-    asteroids = [line.rstrip() for line in sys.stdin]
-    # asteroids = [line.rstrip() for line in open('input')]
+    #asteroids = [line.rstrip() for line in sys.stdin]
+    asteroids = [line.rstrip() for line in open('input')]
 
     asteroid_posns = set()
 
@@ -27,7 +27,7 @@ def main():
 
         #print(in_view) 
         #print(f"In view for {base}: {len(in_view)}")
-        soln[base] =  len(in_view)
+        soln[base] = len(in_view)
 
     #print(soln)
 
@@ -42,6 +42,7 @@ def main():
         print(s)
 
     print(f"Best asteroid: {max(soln.values())}")
+    print(f"{soln}")
 
 
 def is_blocked(base, in_view, asteroid):
