@@ -44,7 +44,7 @@ def compute(int_code: IntCode, debug=False):
             int_code.int_code[posn] = input_value_1 * input_value_2
             int_code.position = int_code.position + 4
 
-        # test_1
+        # input
         elif op_code == 3:
             output_posn = get_memory_value(1, int_code)
             inp = int_code.inputs.pop(0)

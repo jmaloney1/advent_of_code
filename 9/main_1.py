@@ -19,7 +19,7 @@ class IntCode:
 
 
 def main():
-    #int_code = list(map(int, open('input').readline().split(',')))
+    #int_code = list(map(int, open('test_1').readline().split(',')))
     int_code = list(map(int, sys.stdin.readline().split(',')))
 
     code = IntCode(copy.copy(int_code), [1])
