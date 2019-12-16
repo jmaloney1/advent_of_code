@@ -47,7 +47,7 @@ def compute(int_code: IntCode, debug=False):
         # input
         elif op_code == 3:
             output_posn = get_memory_value(1, int_code)
-            inp = int_code.inputs.pop(0)
+            inp = int_code.inputs()
             int_code.int_code[output_posn] = inp
             if debug:
                 print(f"Input: {inp}")
