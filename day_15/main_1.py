@@ -1,4 +1,5 @@
 import copy
+import enum
 import random
 
 from day_13.IntCode import IntCode, compute
