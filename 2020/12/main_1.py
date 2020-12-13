@@ -1,58 +1,3 @@
-import copy
-import itertools
-
-
-def print_state(round, state):
-    print(f"--------{round}-----------")
-    for line in state:
-        print(''.join(line))
-
-if __name__ == '__main__':
-    with open('input', 'r') as input:
-        input_list = [list(line.strip()) for line in input]
-
-    old_state = input_list
-    print_state(0, old_state)
-    for round in itertools.count(1):
-        new_state = []
-        for line in old_state:
-            new_state.append(copy.deepcopy(line))
-
-        for y, line in enumerate(old_state):
-            for x, posn in enumerate(line):
-                if posn == 'L':
-                    occupied_count = 0
-                    for i in range(max(0, y-1), min(len(old_state), y+2)):
-                        occupied_count += old_state[i][max(0, x-1):min(len(line), x+2)].count('#')
-
-                    if occupied_count == 0:
-                        new_state[y][x] = '#'
-
-                elif posn == '#':
-                    occupied_count = -1
-                    for i in range(max(0, y-1), min(len(old_state), y+2)):
-                        occupied_count += old_state[i][max(0, x-1):min(len(line), x+2)].count('#')
-
-                    if occupied_count >= 4:
-                        new_state[y][x] = 'L'
-
-
-        print_state(round, new_state)
-        same = True
-        for y, line in enumerate(new_state):
-            for x, posn in enumerate(line):
-                if old_state[y][x] != posn:
-                    old_state = copy.deepcopy(new_state)
-                    same = False
-
-        if same:
-            count = 0
-            for line in new_state:
-                count += line.count('#')
-            print(count)
-            break
-
-
 if __name__ == '__main__':
     with open('input', 'r') as input:
         input_list = [(line.strip()[0], int(line.strip()[1:])) for line in input]
@@ -61,12 +6,25 @@ if __name__ == '__main__':
     direction = 1
     posn = 0, 0
     for instruction in input_list:
-        if instruction[0] == 'L':
-            direction = ((instruction[1] / 90) + direction) % len(direction_order)
-            print(direction_order[direction])
-        elif instruction[0] == 'R':
-            direction = ((instruction[1] / -90) + direction) % len(direction_order)
-            print(direction_order[direction])
+        print(direction_order[direction], posn)
+        print(instruction)
+        if instruction[0] in ['L', 'R']:
+            rot = (1, -1)[instruction[0] == 'L']
+            direction = (int(instruction[1] / (rot * 90)) + direction) % len(direction_order)
+        elif instruction[0] == 'F':
+            if direction_order[direction] in ['N', 'S']:
+                d = (1, -1)[direction_order[direction] == 'S']
+                posn = posn[0], posn[1] + instruction[1] * d
+            elif direction_order[direction] in ['E', 'W']:
+                d = (1, -1)[direction_order[direction] == 'W']
+                posn = posn[0] + instruction[1] * d, posn[1]
+        elif instruction[0] in direction_order:
+            if instruction[0] in ['N', 'S']:
+                d = (1, -1)[instruction[0] == 'S']
+                posn = posn[0], posn[1] + instruction[1] * d
+            elif instruction[0] in ['E', 'W']:
+                d = (1, -1)[instruction[0] == 'W']
+                posn = posn[0] + instruction[1] * d, posn[1]
 
-
-
+    print(direction_order[direction], posn)
+    print(abs(posn[0]) + abs(posn[1]))

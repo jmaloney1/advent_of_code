@@ -1,74 +1,41 @@
-import copy
-import itertools
-
-
-def print_state(round, state):
-    print(f"--------{round}-----------")
-    for line in state:
-        print(''.join(line))
-
-
-def check_direction(x, y, delta_x, delta_y, old_state):
-    for delta in itertools.count(1):
-        x_1 = x + (delta_x * delta)
-        y_1 = y + (delta_y * delta)
-        if 0 <= x_1 < len(old_state[0]) and 0 <= y_1 < len(old_state):
-            if old_state[y_1][x_1] == '#':
-                return True
-            elif old_state[y_1][x_1] == 'L':
-                return False
-        else:
-            return False
-
-    return False
-
-
 if __name__ == '__main__':
     with open('input', 'r') as input:
-        input_list = [list(line.strip()) for line in input]
+        input_list = [(line.strip()[0], int(line.strip()[1:])) for line in input]
 
-    old_state = input_list
-    print_state(0, old_state)
+    direction_order = ['N', 'E', 'S', 'W']
+    direction = 1
+    waypoint = 10, 1
+    posn = 0, 0
+    for instruction in input_list:
+        print(f"{direction_order[direction]} posn: {posn} waypoint: {waypoint}")
+        print(instruction)
+        if instruction[0] in ['L', 'R']:
+            rot = instruction[1] % 360
+            if instruction[0] == 'L':
+                rot = 360 - rot
+            num_rot = int(rot / 90)
+            new_direction = (direction + num_rot) % len(direction_order)
+            # 90 clockwise
+            if num_rot == 1:
+                waypoint = waypoint[1], -waypoint[0]
+            # 180 clockwise
+            elif num_rot == 2:
+                waypoint = -waypoint[0], -waypoint[1]
+            # 270 clockwise
+            elif num_rot == 3:
+                waypoint = -waypoint[1], waypoint[0]
 
-    for round in itertools.count(1):
-        new_state = []
-        for line in old_state:
-            new_state.append(copy.deepcopy(line))
+            direction = new_direction
 
-        for y, line in enumerate(old_state):
-            for x, posn in enumerate(line):
-                if posn == 'L':
-                    occupied_count = 0
-                    for (delta_x, delta_y) in [(0, 1), (1, 1), (1, 0), (1, -1), (0, -1), (-1, -1), (-1, 0), (-1, 1)]:
-                        if check_direction(x, y, delta_x, delta_y, old_state):
-                            occupied_count += 1
+        elif instruction[0] == 'F':
+            posn = posn[0] + instruction[1] * waypoint[0], posn[1] + instruction[1] * waypoint[1]
+        elif instruction[0] in direction_order:
+            if instruction[0] in ['N', 'S']:
+                d = (1, -1)[instruction[0] == 'S']
+                waypoint = waypoint[0], waypoint[1] + instruction[1] * d
+            elif instruction[0] in ['E', 'W']:
+                d = (1, -1)[instruction[0] == 'W']
+                waypoint = waypoint[0] + instruction[1] * d, waypoint[1]
 
-                    if occupied_count == 0:
-                        new_state[y][x] = '#'
-
-                elif posn == '#':
-                    occupied_count = 0
-                    for (delta_x, delta_y) in [(0, 1), (1, 1), (1, 0), (1, -1), (0, -1), (-1, -1), (-1, 0), (-1, 1)]:
-                        if check_direction(x, y, delta_x, delta_y, old_state):
-                            occupied_count += 1
-
-                    if occupied_count >= 5:
-                        new_state[y][x] = 'L'
-
-
-        print_state(round, new_state)
-        same = True
-        for y, line in enumerate(new_state):
-            for x, posn in enumerate(line):
-                if old_state[y][x] != posn:
-                    old_state = copy.deepcopy(new_state)
-                    same = False
-
-        if same:
-            count = 0
-            for line in new_state:
-                count += line.count('#')
-            print(count)
-            break
-
-
+    print(direction_order[direction], posn)
+    print(abs(posn[0]) + abs(posn[1]))
