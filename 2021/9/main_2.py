@@ -1,28 +1,35 @@
+from dataclasses import dataclass
+from functools import reduce
+
+
+@dataclass(frozen=True, eq=True)
+class Point:
+    i: str
+    x: int
+    y: int
+
+
 def get_adjacent_points(x, y, height_map):
-    w_y = [(height_map[i][x], x, i) for i in range(y-1, y+2)]
-    w_x = [(height_map[y][i], i, y) for i in range(x-1, x+2)]
+    w_y = [Point(height_map[i][x], x, i) for i in range(y-1, y+2)]
+    w_x = [Point(height_map[y][i], i, y) for i in range(x-1, x+2)]
     w_y.pop(1)
     w_x.pop(1)
     return w_x, w_y
 
 
-def search_basin(x, y, height_map, n):
-    p = height_map[y][x]
-    if p == '9' or p in n:
-        return 0
+def search_basin(p, height_map, n):
+    if p.i == '9' or p in n:
+        return {}
     else:
-        adj_x, adj_y = get_adjacent_points(x, y, height_map)
-        n += p
-        n += adj_y
-        n += adj_x
-        t = 1
+        adj_x, adj_y = get_adjacent_points(p.x, p.y, height_map)
+        n = n.union({p})
         for adj in adj_x + adj_y:
-            t += search_basin(adj[1], adj[2], height_map, n)
-        return t
+            n = n.union(search_basin(adj, height_map, n))
+        return n
 
 
 if __name__ == '__main__':
-    with open('test_input') as f:
+    with open('input') as f:
         height_map = ['9' + l.strip() + '9' for l in f]
 
         # wrap in 9s
@@ -35,12 +42,14 @@ if __name__ == '__main__':
             line = height_map[y]
             for x in range(1, len(line)-1):
                 w_x, w_y = get_adjacent_points(x, y, height_map)
-                if w_x[0][0] > line[x] < w_x[1][0] and w_y[0][0] > line[x] < w_y[1][0]:
+                if w_x[0].i > line[x] < w_x[1].i and w_y[0].i > line[x] < w_y[1].i:
                     t += int(line[x]) + 1
-                    low_points.append((line[x], x, y))
+                    low_points.append(Point(line[x], x, y))
 
-        print(t)
-        print(low_points)
-
+        basins = []
         for l in low_points:
-            print(search_basin(l[1], l[2], height_map, []))
+            basin = search_basin(l, height_map, set())
+            print(basin)
+            basins.append(basin)
+
+        print(reduce(lambda x, s: x * s, sorted(map(len, basins))[-3:]))
