@@ -6,17 +6,18 @@ def get_adjacent_points(x, y, height_map):
     return w_x, w_y
 
 
-def search_basin(x, y, height_map):
+def search_basin(x, y, height_map, n):
     p = height_map[y][x]
-    if p == 9:
+    if p == '9' or p in n:
         return 0
     else:
-        t = 0
         adj_x, adj_y = get_adjacent_points(x, y, height_map)
-        for adj in adj_x:
-            t += search_basin(adj[1], adj[2], height_map)
-        for adj in adj_y:
-            t += search_basin(adj[1], adj[2], height_map)
+        n += p
+        n += adj_y
+        n += adj_x
+        t = 1
+        for adj in adj_x + adj_y:
+            t += search_basin(adj[1], adj[2], height_map, n)
         return t
 
 
@@ -41,4 +42,5 @@ if __name__ == '__main__':
         print(t)
         print(low_points)
 
-        print(search_basin(low_points[0][1], low_points[0][2], height_map))
+        for l in low_points:
+            print(search_basin(l[1], l[2], height_map, []))
