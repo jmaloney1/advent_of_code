@@ -1,55 +1,55 @@
-class Node:
-    def __init__(self, i):
-        self.i = i
-        self.adj = []
-
-    def __str__(self):
-        return f"{self.i}: {self.adj}"
-
-
-def is_big_cave(i):
-    return i.upper() == i
-
-
-def is_small_cave(i):
-    return i.lower() == i
+def print_paper(coords):
+    max_x = max(map(lambda c: c[0], coords))
+    max_y = max(map(lambda c: c[1], coords))
+    for y in range(max_y+1):
+        for x in range(max_x+1):
+            if (x, y) in coords:
+                print('#', end='')
+            else:
+                print('.', end='')
+        print('\n', end='')
 
 
-def search(n, nodes, seen, small_cave_reuse):
-    if n.i == 'end':
-        return [seen + [n.i]]
-    elif n.i == 'start' and len(seen) > 0:
-        return []
-    elif small_cave_reuse is True and is_small_cave(n.i) and n.i in seen:
-        return []
+def fold_paper(coords, fold):
+    if fold[0] == 'y':
+        def map_coord(c):
+            if c[1] < fold[1]:
+                return c
+            else:
+                return c[0], fold[1] * 2 - c[1]
+        return set(map(lambda c: map_coord(c), coords))
     else:
-        paths = []
-        small_cave_reuse = small_cave_reuse or n.i in seen and is_small_cave(n.i)
-        for i in n.adj:
-            p = search(i, nodes, seen + [n.i], small_cave_reuse)
-            if len(p) > 0:
-                paths += p
-
-        return paths
+        def map_coord(c):
+            if c[0] < fold[1]:
+                return c
+            else:
+                return fold[1] * 2 - c[0], c[1]
+        return set(map(lambda c: map_coord(c), coords))
 
 
 if __name__ == '__main__':
-    nodes = dict()
+    coords = set()
+    folds = []
     with open('input') as f:
+        read_folds = False
         for line in f:
-            edge = line.strip().split('-')[:2]
-            n_0 = nodes.get(edge[0])
-            if n_0 is None:
-                n_0 = Node(edge[0])
-                nodes[edge[0]] = n_0
-            n_1 = nodes.get(edge[1])
-            if n_1 is None:
-                n_1 = Node(edge[1])
-                nodes[edge[1]] = n_1
-            n_1 = nodes.get(edge[1], Node(edge[0]))
-            n_0.adj.append(n_1)
-            n_1.adj.append(n_0)
+            if line == '\n':
+                read_folds = True
+            elif read_folds:
+                fold_raw = line.strip().replace('fold along ', '').split('=')[:2]
+                folds.append((fold_raw[0], int(fold_raw[1])))
+            else:
+                coord = tuple(map(int, line.strip().split(',')[:2]))
+                coords.add(coord)
 
-    paths = search(nodes['start'], nodes, [], False)
-    print(paths)
-    print(len(paths))
+    print(coords)
+    print(folds)
+
+    # print_paper(coords)
+    coords = fold_paper(coords, folds[0])
+
+    for f in folds:
+        coords = fold_paper(coords, f)
+
+    print("After folds")
+    print_paper(coords)
