@@ -1,57 +1,32 @@
-def print_paper(coords):
-    max_x = max(map(lambda c: c[0], coords))
-    max_y = max(map(lambda c: c[1], coords))
-    for y in range(max_y+1):
-        for x in range(max_x+1):
-            if (x, y) in coords:
-                print('#', end='')
-            else:
-                print('.', end='')
-        print('\n', end='')
-
-
-def fold_paper(coords, fold):
-    if fold[0] == 'y':
-        def map_coord(c):
-            if c[1] < fold[1]:
-                return c
-            else:
-                return c[0], fold[1] * 2 - c[1]
-        return set(map(lambda c: map_coord(c), coords))
-    else:
-        def map_coord(c):
-            if c[0] < fold[1]:
-                return c
-            else:
-                return fold[1] * 2 - c[0], c[1]
-        return set(map(lambda c: map_coord(c), coords))
-
+from collections import Counter
 
 if __name__ == '__main__':
-    coords = set()
-    folds = []
+    polymer_template = {}
+    polymer = None
     with open('input') as f:
-        read_folds = False
         for line in f:
             if line == '\n':
-                read_folds = True
-            elif read_folds:
-                fold_raw = line.strip().replace('fold along ', '').split('=')[:2]
-                folds.append((fold_raw[0], int(fold_raw[1])))
+                continue
+            elif ' -> ' not in line:
+                polymer = line.strip()
             else:
-                coord = tuple(map(int, line.strip().split(',')[:2]))
-                coords.add(coord)
+                l = line.strip().split(' -> ')[:2]
+                polymer_template[l[0]] = l[1]
 
-    print(coords)
-    print(folds)
+    for i in range(10):
+        new_polymer = polymer[0]
+        windows = [polymer[x:x+2] for x in range(len(polymer)-1)]
+        for w in windows:
+            if w in polymer_template:
+                new_polymer = new_polymer + polymer_template[w] + w[1]
+            else:
+                new_polymer = new_polymer + w
 
-    # print_paper(coords)
-    coords = fold_paper(coords, folds[0])
+        polymer = new_polymer
+        print(new_polymer)
 
-    print("After fold")
-    # print_paper(coords)
-    print(len(coords))
+    print(polymer)
 
-    # print("After fold")
-    # coords = fold_paper(coords, folds[1])
-    # print_paper(coords)
+    counter = Counter(polymer)
+    print(max(counter.values()) - min(counter.values()))
+

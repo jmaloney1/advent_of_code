@@ -1,55 +1,42 @@
-def print_paper(coords):
-    max_x = max(map(lambda c: c[0], coords))
-    max_y = max(map(lambda c: c[1], coords))
-    for y in range(max_y+1):
-        for x in range(max_x+1):
-            if (x, y) in coords:
-                print('#', end='')
-            else:
-                print('.', end='')
-        print('\n', end='')
-
-
-def fold_paper(coords, fold):
-    if fold[0] == 'y':
-        def map_coord(c):
-            if c[1] < fold[1]:
-                return c
-            else:
-                return c[0], fold[1] * 2 - c[1]
-        return set(map(lambda c: map_coord(c), coords))
-    else:
-        def map_coord(c):
-            if c[0] < fold[1]:
-                return c
-            else:
-                return fold[1] * 2 - c[0], c[1]
-        return set(map(lambda c: map_coord(c), coords))
-
+from collections import defaultdict
 
 if __name__ == '__main__':
-    coords = set()
-    folds = []
+    polymer_template = {}
+    polymer = None
     with open('input') as f:
-        read_folds = False
         for line in f:
             if line == '\n':
-                read_folds = True
-            elif read_folds:
-                fold_raw = line.strip().replace('fold along ', '').split('=')[:2]
-                folds.append((fold_raw[0], int(fold_raw[1])))
+                continue
+            elif ' -> ' not in line:
+                polymer = line.strip()
             else:
-                coord = tuple(map(int, line.strip().split(',')[:2]))
-                coords.add(coord)
+                l = line.strip().split(' -> ')[:2]
+                polymer_template[l[0]] = l[1]
 
-    print(coords)
-    print(folds)
+    polymer_count = defaultdict(lambda: 0)
+    for w in [polymer[x:x+2] for x in range(len(polymer)-1)]:
+        polymer_count[w] = 1
 
-    # print_paper(coords)
-    coords = fold_paper(coords, folds[0])
+    for i in range(40):
+        new_polymer_count = defaultdict(lambda: 0)
+        for k in polymer_count.keys():
+            t = polymer_template[k]
+            new_polymer_count[k[0] + t] += polymer_count[k]
+            new_polymer_count[t + k[1]] += polymer_count[k]
 
-    for f in folds:
-        coords = fold_paper(coords, f)
+        polymer_count = new_polymer_count
 
-    print("After folds")
-    print_paper(coords)
+        print(polymer_count)
+
+    polymer_count[polymer[0]] = 1
+    polymer_count[polymer[-1]] = 1
+
+    sums = []
+    for i in range(ord('A'), ord('Z')+1):
+        c = chr(i)
+        count = sum(map(lambda k: polymer_count[k] * (1, 2)[len(k) == 2 and k[0] == k[1]], filter(lambda k: c in k, polymer_count.keys())))
+        if count > 0:
+            print(f"{c}: {count // 2}")
+            sums.append(count // 2)
+
+    print(max(sums) - min(sums))
