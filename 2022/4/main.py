@@ -1,10 +1,3 @@
-def get_priority(item: str):
-    if item.isupper():
-        return ord(item) - ord('A') + 27
-    else:
-        return ord(item) - ord('a') + 1
-
-
 if __name__ == '__main__':
     with open('input') as f:
         fully_containing = 0
