@@ -1,5 +1,7 @@
+import os
 def main():
-    with open("5/input/test") as f:
+    os.chdir(os.path.dirname(os.path.realpath(__file__))) 
+    with open("input/input") as f:
         lines = f.readlines()
     
     # Split into rules and sequences
@@ -24,6 +26,33 @@ def main():
     print(f"Found {len(rules)} rules and {len(sequences)} sequences")
     print("Rules:", rules)
     print("Sequences:", sequences)
+
+    def check_sequence(sequence):
+        for i, s in enumerate(sequence):
+            # enumerate before s
+            for j, _s in enumerate(sequence[:i]):
+                if (_s, s) not in rules:
+                    print(f"Rule not found for {_s}|{s}")
+                    return False
+
+            # enumerate after s
+            for j, _s in enumerate(sequence[i+1:]):
+                if (s, _s) not in rules:
+                    print(f"Rule not found for {s}|{_s}")
+                    return False
+        
+        return True;
+
+    valid_middle_sum = 0
+    for sequence in sequences:
+        if check_sequence(sequence):
+            print(f"sequence {sequence} is valid")
+            valid_middle_sum += sequence[len(sequence) // 2]
+
+        else:
+            print(f"sequence {sequence} is invalid")
+    
+    print(f"valid middle sum: {valid_middle_sum}")
 
 if __name__ == "__main__":
     main()
